@@ -1,0 +1,19 @@
+# Never commit credentials or local attendee data.
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite
+*.sqlite3
+
+# Ignore generated Python files and virtual-environment contents.
+__pycache__/
+*.py[cod]
+venv/*
+!venv/Scripts/
+venv/Scripts/*
+!venv/Scripts/*.py
+!venv/Scripts/requirements.txt
+!venv/data/
+venv/data/*
+!venv/data/sessions.csv
