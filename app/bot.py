@@ -93,6 +93,15 @@ async def send_qr(bot, chat_id: int, reg, text: str):
     )
 
 
+async def edit_menu_message(query, text: str, reply_markup=None):
+    """Edit either the text menu or the caption menu attached to a QR photo."""
+    message = query.message
+    if message and message.text is None and message.caption is not None:
+        await query.edit_message_caption(caption=text, reply_markup=reply_markup)
+        return
+    await query.edit_message_text(text, reply_markup=reply_markup)
+
+
 # ---------- conversation steps ----------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reg = db.get_registration(update.effective_user.id)
@@ -140,7 +149,8 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reg = db.get_registration(update.effective_user.id)
     if action == "home":
         lang = reg["language"] if reg else lang
-        await query.edit_message_text(
+        await edit_menu_message(
+            query,
             t(lang, "main_menu"),
             reply_markup=main_menu_keyboard(lang, registered=reg is not None),
         )
@@ -161,7 +171,7 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     elif action == "venue":
         map_url = (
-            "https://www.google.com/maps/search/?api=1&query="
+            "https://www.google.com/maps/dir/?api=1&destination="
             + quote_plus(f"{config.CONFERENCE_VENUE}, Ethiopia")
         )
         keyboard = InlineKeyboardMarkup(
@@ -170,12 +180,14 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 [InlineKeyboardButton(t(lang, "menu_back"), callback_data="menu:home")],
             ]
         )
-        await query.edit_message_text(
+        await edit_menu_message(
+            query,
             t(lang, "venue_info", venue=config.CONFERENCE_VENUE, dates=config.CONFERENCE_DATES),
             reply_markup=keyboard,
         )
     elif action == "contact":
-        await query.edit_message_text(
+        await edit_menu_message(
+            query,
             t(lang, "contact_unavailable"), reply_markup=back_menu_keyboard(lang)
         )
 
