@@ -8,10 +8,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY venv/Scripts/requirements.txt /app/venv/Scripts/requirements.txt
-RUN pip install --no-cache-dir -r /app/venv/Scripts/requirements.txt
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-COPY venv/Scripts/*.py /app/venv/Scripts/
-COPY venv/data/sessions.csv /app/venv/data/sessions.csv
+COPY app/ /app/app/
+COPY data/sessions.csv /app/data/sessions.csv
 
-CMD ["python", "/app/venv/Scripts/railway_app.py"]
+CMD ["python", "/app/app/railway_app.py"]

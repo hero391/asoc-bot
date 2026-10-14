@@ -7,10 +7,5 @@
 *.sqlite3
 __pycache__
 *.py[cod]
-venv/Lib
-venv/Include
-venv/share
-venv/pyvenv.cfg
-venv/Scripts/*.exe
-venv/Scripts/activate*
-venv/Scripts/deactivate*
+venv/
+.venv/

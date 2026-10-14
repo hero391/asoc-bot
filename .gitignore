@@ -6,14 +6,8 @@
 *.sqlite
 *.sqlite3
 
-# Ignore generated Python files and virtual-environment contents.
+# Ignore generated Python files and local environments.
 __pycache__/
 *.py[cod]
-venv/*
-!venv/Scripts/
-venv/Scripts/*
-!venv/Scripts/*.py
-!venv/Scripts/requirements.txt
-!venv/data/
-venv/data/*
-!venv/data/sessions.csv
+venv/
+.venv/

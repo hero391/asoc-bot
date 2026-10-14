@@ -1,12 +1,12 @@
 import os
 from pathlib import Path
 from zoneinfo import ZoneInfo
-
 from dotenv import load_dotenv
 
-load_dotenv()
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT / "venv" / "Scripts" / ".env")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 QR_SECRET = os.getenv("QR_SECRET", "")
 CHECKIN_PASSWORD = os.getenv("CHECKIN_PASSWORD", "")
@@ -23,7 +23,7 @@ def project_path(value: str) -> str:
 
 
 DB_PATH = project_path(os.getenv("DB_PATH", "aso.db"))
-SESSIONS_CSV = project_path(os.getenv("SESSIONS_CSV", "venv/data/sessions.csv"))
+SESSIONS_CSV = project_path(os.getenv("SESSIONS_CSV", "data/sessions.csv"))
 
 # Conference time zone (Addis Ababa, UTC+3)
 TIMEZONE = ZoneInfo("Africa/Addis_Ababa")

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123b35">
+  <meta name="description" content="Secure staff sign-in for ASOC 2026 attendee check-in.">
+  <title>Staff Sign-in | ASOC 2026</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, "Segoe UI", system-ui, sans-serif; background: #f3f6f5; color: #172b27; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; --green: #145c4c; --green-dark: #103c34; --muted: #5c6b67; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 1.25rem; background: radial-gradient(ellipse at 50% 0, #e0ece8 0, #f3f6f5 38rem); }
+    main { width: min(100%, 27rem); padding: clamp(1.5rem, 6vw, 2.25rem); border: 1px solid #e8eeeb; border-radius: 1.25rem; background: white; box-shadow: 0 18px 54px #173a3315, 0 2px 8px #173a3308; }
+    .brand { display: flex; align-items: center; gap: .85rem; margin-bottom: 2rem; }
+    .brand-mark { width: 2.8rem; height: 2.8rem; display: grid; place-items: center; border-radius: .8rem; background: var(--green-dark); color: #f2d797; font-size: .78rem; font-weight: 800; letter-spacing: -.05em; }
+    .brand strong, .brand span { display: block; }
+    .brand strong { font-size: .93rem; }
+    .brand span { margin-top: .2rem; color: var(--muted); font-size: .78rem; }
+    .eyebrow { margin: 0 0 .45rem; color: var(--green); font-size: .75rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: 1.8rem; letter-spacing: -.045em; }
+    .intro { margin: .55rem 0 1.5rem; color: var(--muted); line-height: 1.6; }
+    label { display: block; margin: 1.25rem 0 .45rem; font-size: .9rem; font-weight: 700; }
+    input, button { width: 100%; min-height: 3.1rem; border-radius: .7rem; font: inherit; }
+    input { border: 1px solid #cedad5; padding: .8rem .9rem; color: inherit; }
+    input:focus-visible, button:focus-visible { outline: 3px solid #bd8b35; outline-offset: 2px; }
+    button { margin-top: 1rem; border: 0; background: var(--green); color: white; font-weight: 750; cursor: pointer; box-shadow: 0 3px 8px #145c4c22; transition: background .15s, transform .15s; }
+    button:hover { background: #104b3e; transform: translateY(-1px); }
+    .error { padding: .8rem .9rem; border: 1px solid #f2d4d1; border-radius: .65rem; background: #fff5f4; color: #8b2822; line-height: 1.5; }
+    footer { margin-top: 1.5rem; color: #70807b; font-size: .78rem; text-align: center; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">ASOC</div>
+      <div>
+        <strong>African Stroke Organization</strong>
+        <span>Conference 2026</span>
+      </div>
+    </div>
+    <p class="eyebrow">Private staff portal</p>
+    <h1>Welcome back</h1>
+    <p class="intro">Sign in to verify attendee registrations and manage conference check-in.</p>
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+      <p class="{{ category }}">{{ message }}</p>
+    {% endfor %}
+    <form method="post" action="{{ url_for('login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label for="password">Staff password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required autofocus aria-label="Staff password">
+      <button type="submit">Sign in securely</button>
+    </form>
+    <footer>Authorized conference staff only</footer>
+  </main>
+</body>
+</html>
