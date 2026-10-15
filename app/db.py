@@ -30,6 +30,11 @@ def init_db():
                 institution     TEXT NOT NULL,
                 language        TEXT NOT NULL DEFAULT 'en',
                 attendance_mode TEXT NOT NULL,
+                title           TEXT NOT NULL DEFAULT '',
+                attendance_days TEXT NOT NULL DEFAULT '',
+                referral_source TEXT NOT NULL DEFAULT '',
+                region          TEXT NOT NULL DEFAULT '',
+                trainee_status  TEXT NOT NULL DEFAULT '',
                 created_at      TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -74,6 +79,20 @@ def init_db():
         }
         if "checked_in_at" not in registration_columns:
             conn.execute("ALTER TABLE registrations ADD COLUMN checked_in_at TEXT")
+        user_columns = {
+            row["name"] for row in conn.execute("PRAGMA table_info(users)").fetchall()
+        }
+        for column in (
+            "title",
+            "attendance_days",
+            "referral_source",
+            "region",
+            "trainee_status",
+        ):
+            if column not in user_columns:
+                conn.execute(
+                    f"ALTER TABLE users ADD COLUMN {column} TEXT NOT NULL DEFAULT ''"
+                )
 
 
 def get_registration(telegram_id: int):
@@ -83,7 +102,8 @@ def get_registration(telegram_id: int):
             """
             SELECT r.reg_code, r.qr_token, r.status,
                    u.full_name, u.phone, u.email, u.role,
-                   u.institution, u.language, u.attendance_mode
+                   u.institution, u.language, u.attendance_mode, u.title,
+                   u.attendance_days, u.referral_source, u.region, u.trainee_status
             FROM registrations r
             JOIN users u ON u.telegram_id = r.telegram_id
             WHERE r.telegram_id = ?
@@ -102,8 +122,9 @@ def create_registration(telegram_id: int, data: dict):
         conn.execute(
             """
             INSERT INTO users (telegram_id, full_name, phone, email, role,
-                               institution, language, attendance_mode)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                               institution, language, attendance_mode, title,
+                               attendance_days, referral_source, region, trainee_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 telegram_id,
@@ -114,6 +135,11 @@ def create_registration(telegram_id: int, data: dict):
                 data["institution"],
                 data["language"],
                 data["attendance_mode"],
+                data["title"],
+                data["attendance_days"],
+                data["referral_source"],
+                data["region"],
+                data["trainee_status"],
             ),
         )
         cur = conn.execute(
@@ -129,6 +155,28 @@ def create_registration(telegram_id: int, data: dict):
     return get_registration(telegram_id)
 
 
+def update_registration_details(telegram_id: int, data: dict):
+    """Save additional registration details for an existing attendee."""
+    with get_conn() as conn:
+        conn.execute(
+            """
+            UPDATE users
+            SET title = ?, attendance_days = ?, referral_source = ?, region = ?,
+                trainee_status = ?
+            WHERE telegram_id = ?
+            """,
+            (
+                data["title"],
+                data["attendance_days"],
+                data["referral_source"],
+                data["region"],
+                data["trainee_status"],
+                telegram_id,
+            ),
+        )
+    return get_registration(telegram_id)
+
+
 def count_registrations() -> int:
     with get_conn() as conn:
         return conn.execute("SELECT COUNT(*) FROM registrations").fetchone()[0]
@@ -140,7 +188,8 @@ def get_registrations_for_export():
         return conn.execute(
             """
             SELECT r.created_at, r.reg_code, r.status, u.full_name, u.role,
-                   u.institution, u.email, u.phone, u.attendance_mode
+                   u.institution, u.email, u.phone, u.attendance_mode, u.title,
+                   u.attendance_days, u.referral_source, u.region, u.trainee_status
             FROM registrations r
             JOIN users u ON u.telegram_id = r.telegram_id
             ORDER BY r.created_at, r.id

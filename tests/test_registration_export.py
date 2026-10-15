@@ -1,4 +1,5 @@
 import sys
+import sqlite3
 import tempfile
 import unittest
 from io import BytesIO
@@ -11,7 +12,9 @@ APP_DIR = Path(__file__).resolve().parents[1] / "app"
 sys.path.insert(0, str(APP_DIR))
 
 import checkin_app
+import bot
 import schedule_handlers
+from telegram.ext import ConversationHandler
 from texts import t
 
 
@@ -42,6 +45,11 @@ class RegistrationExportTests(unittest.TestCase):
             "email": "attendee@example.org",
             "phone": "+251963333388",
             "attendance_mode": "in_person",
+            "title": "Dr.",
+            "attendance_days": "2026-11-01,2026-11-03",
+            "referral_source": "invitation",
+            "region": "Addis Ababa",
+            "trainee_status": "no",
         }
         with patch.object(
             checkin_app.db,
@@ -83,8 +91,14 @@ class RegistrationExportTests(unittest.TestCase):
         self.assertEqual(worksheet["C2"].data_type, "s")
         self.assertEqual(worksheet["E2"].value, "Addis Ababa University")
         self.assertEqual(worksheet["G2"].value, "+251963333388")
-        self.assertIsNone(worksheet["B2"].value)
-        self.assertIsNone(worksheet["H2"].value)
+        self.assertEqual(worksheet["B2"].value, "Dr.")
+        self.assertEqual(
+            worksheet["H2"].value,
+            "Day 0 — Sunday, November 1, 2026, Day 2 — Tuesday, November 3, 2026",
+        )
+        self.assertEqual(worksheet["I2"].value, "Invitation from the organizers")
+        self.assertEqual(worksheet["J2"].value, "Addis Ababa")
+        self.assertEqual(worksheet["K2"].value, "No")
         self.assertEqual(worksheet["L2"].value, "ASOC-0001")
         self.assertEqual(worksheet["D2"].value, "Doctor")
         self.assertEqual(worksheet["N2"].value, "In person")
@@ -113,6 +127,60 @@ class RegistrationExportTests(unittest.TestCase):
             schedule_day_keyboard.inline_keyboard[-1][0].callback_data, "menu:home"
         )
 
+    def test_registered_menu_offers_update_details(self):
+        keyboard = bot.main_menu_keyboard("en", registered=True)
+
+        self.assertEqual(
+            keyboard.inline_keyboard[-1][0].callback_data, "menu:update"
+        )
+
+    def test_legacy_registration_is_detected_as_incomplete(self):
+        registration = {
+            "title": "",
+            "attendance_days": "",
+            "referral_source": "",
+            "region": "",
+            "trainee_status": "",
+        }
+        self.assertTrue(bot.registration_details_incomplete(registration))
+        registration.update(
+            {
+                "title": "Dr.",
+                "attendance_days": "2026-11-01",
+                "referral_source": "invitation",
+                "region": "Addis Ababa",
+                "trainee_status": "no",
+            }
+        )
+        self.assertFalse(bot.registration_details_incomplete(registration))
+
+    def test_bot_registers_all_registration_and_update_conversation_states(self):
+        with (
+            patch.object(bot.config, "BOT_TOKEN", "123456:test-token"),
+            patch.object(bot.config, "check_config"),
+            patch.object(bot.db, "init_db"),
+            patch.object(bot.schedule_handlers, "ensure_schedule_loaded", return_value=87),
+        ):
+            application = bot.build_app()
+
+        conversations = [
+            handler
+            for handlers in application.handlers.values()
+            for handler in handlers
+            if isinstance(handler, ConversationHandler)
+        ]
+        registration = next(handler for handler in conversations if bot.TITLE in handler.states)
+        update_details = next(
+            handler for handler in conversations if bot.UPDATE_TITLE in handler.states
+        )
+        self.assertIn(bot.DAYS, registration.states)
+        self.assertIn(bot.REFERRAL, registration.states)
+        self.assertIn(bot.REGION, registration.states)
+        self.assertIn(bot.TRAINEE_CATEGORY, registration.states)
+        self.assertIn(bot.UPDATE_DAYS, update_details.states)
+        self.assertIn(bot.UPDATE_REGION, update_details.states)
+        self.assertIn(bot.UPDATE_TRAINEE_CATEGORY, update_details.states)
+
     def test_contact_details_are_available_in_both_languages(self):
         for language in ("en", "am"):
             contact = t(language, "contact_info")
@@ -135,6 +203,11 @@ class RegistrationExportTests(unittest.TestCase):
                         "institution": "Test Hospital",
                         "language": "en",
                         "attendance_mode": "in_person",
+                        "title": "Prof.",
+                        "attendance_days": "2026-11-01,2026-11-02",
+                        "referral_source": "colleague",
+                        "region": "Oromia",
+                        "trainee_status": "fellow",
                     },
                 )
 
@@ -144,6 +217,103 @@ class RegistrationExportTests(unittest.TestCase):
         self.assertEqual(registrations[0]["full_name"], "Test Attendee")
         self.assertEqual(registrations[0]["institution"], "Test Hospital")
         self.assertEqual(registrations[0]["attendance_mode"], "in_person")
+        self.assertEqual(registrations[0]["title"], "Prof.")
+        self.assertEqual(
+            registrations[0]["attendance_days"], "2026-11-01,2026-11-02"
+        )
+        self.assertEqual(registrations[0]["referral_source"], "colleague")
+        self.assertEqual(registrations[0]["region"], "Oromia")
+        self.assertEqual(registrations[0]["trainee_status"], "fellow")
+
+    def test_existing_registration_details_can_be_completed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database_path = Path(directory) / "test.db"
+            with patch.object(checkin_app.db.config, "DB_PATH", str(database_path)):
+                checkin_app.db.init_db()
+                checkin_app.db.create_registration(
+                    456,
+                    {
+                        "full_name": "Existing Attendee",
+                        "phone": "+251963333388",
+                        "email": "existing@example.org",
+                        "role": "nurse",
+                        "institution": "Test Clinic",
+                        "language": "en",
+                        "attendance_mode": "virtual",
+                        "title": "",
+                        "attendance_days": "",
+                        "referral_source": "",
+                        "region": "",
+                        "trainee_status": "",
+                    },
+                )
+
+                updated = checkin_app.db.update_registration_details(
+                    456,
+                    {
+                        "title": "Dr.",
+                        "attendance_days": "2026-11-02,2026-11-04",
+                        "referral_source": "social",
+                        "region": "Amhara",
+                        "trainee_status": "resident",
+                    },
+                )
+
+        self.assertEqual(updated["title"], "Dr.")
+        self.assertEqual(updated["attendance_days"], "2026-11-02,2026-11-04")
+        self.assertEqual(updated["referral_source"], "social")
+        self.assertEqual(updated["region"], "Amhara")
+        self.assertEqual(updated["trainee_status"], "resident")
+
+    def test_legacy_database_gets_blank_optional_fields(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database_path = Path(directory) / "legacy.db"
+            connection = sqlite3.connect(database_path)
+            try:
+                connection.executescript(
+                    """
+                    CREATE TABLE users (
+                        telegram_id INTEGER PRIMARY KEY,
+                        full_name TEXT NOT NULL,
+                        phone TEXT NOT NULL,
+                        email TEXT NOT NULL,
+                        role TEXT NOT NULL,
+                        institution TEXT NOT NULL,
+                        language TEXT NOT NULL DEFAULT 'en',
+                        attendance_mode TEXT NOT NULL,
+                        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    );
+                    CREATE TABLE registrations (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        reg_code TEXT UNIQUE,
+                        telegram_id INTEGER UNIQUE NOT NULL,
+                        qr_token TEXT,
+                        status TEXT NOT NULL DEFAULT 'confirmed',
+                        checked_in_at TEXT,
+                        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    );
+                    INSERT INTO users (
+                        telegram_id, full_name, phone, email, role,
+                        institution, attendance_mode
+                    ) VALUES (789, 'Legacy Attendee', '+251911111111',
+                              'legacy@example.org', 'doctor', 'Old Clinic',
+                              'in_person');
+                    INSERT INTO registrations (reg_code, telegram_id, qr_token)
+                    VALUES ('ASOC-0001', 789, 'legacy-qr-token');
+                    """
+                )
+            finally:
+                connection.close()
+
+            with patch.object(checkin_app.db.config, "DB_PATH", str(database_path)):
+                checkin_app.db.init_db()
+                registration = checkin_app.db.get_registration(789)
+
+        self.assertEqual(registration["title"], "")
+        self.assertEqual(registration["attendance_days"], "")
+        self.assertEqual(registration["referral_source"], "")
+        self.assertEqual(registration["region"], "")
+        self.assertEqual(registration["trainee_status"], "")
 
 
 if __name__ == "__main__":

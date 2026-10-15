@@ -26,7 +26,7 @@ from waitress import serve
 import config
 import db
 from qr_utils import verify_token
-from texts import MODES, ROLES
+from texts import DAY_INFO, MODES, REFERRAL_SOURCES, ROLES, TRAINEE_CATEGORIES
 
 
 def conference_day():
@@ -113,8 +113,31 @@ def attendee_json(attendee, attendance_date):
 def export_label(options, value):
     for key, label, _amharic_label in options:
         if key == value:
-            return label.split(maxsplit=1)[-1]
+            first_word, _separator, remaining = label.partition(" ")
+            return remaining if first_word and not first_word[0].isascii() else label
     return str(value).replace("_", " ").title()
+
+
+def export_attendance_days(value):
+    day_labels = {
+        date: (
+            f"Day {index} — "
+            f"{datetime.strptime(date, '%Y-%m-%d').strftime('%A, %B')} "
+            f"{int(date[-2:])}, {date[:4]}"
+        )
+        for index, (date, _english_label, _amharic_label) in enumerate(DAY_INFO)
+    }
+    return ", ".join(
+        day_labels[date]
+        for date in value.split(",")
+        if date in day_labels
+    )
+
+
+def export_trainee_status(value):
+    if value == "no":
+        return "No"
+    return export_label(TRAINEE_CATEGORIES, value)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -208,16 +231,16 @@ def export_registrations():
         local_timestamp = created_at.astimezone(config.TIMEZONE).replace(tzinfo=None)
         values = [
             local_timestamp,
-            "",
+            registration["title"],
             registration["full_name"],
             export_label(ROLES, registration["role"]),
             registration["institution"],
             registration["email"],
             registration["phone"],
-            "",
-            "",
-            "",
-            "",
+            export_attendance_days(registration["attendance_days"]),
+            export_label(REFERRAL_SOURCES, registration["referral_source"]),
+            registration["region"],
+            export_trainee_status(registration["trainee_status"]),
             registration["reg_code"],
             str(registration["status"]).replace("_", " ").title(),
             export_label(MODES, registration["attendance_mode"]),

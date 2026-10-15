@@ -13,16 +13,31 @@ TEXTS = {
             "📅 November 1-4, 2026\n📍 Adawa Victory Hall, Addis Ababa\n\n"
             "Let's register you. You can type /cancel at any time."
         ),
-        "ask_name": "1/6 - Please type your *full name* (as it should appear on your certificate):",
+        "ask_title": "What title should appear with your name?",
+        "ask_other_title": "Please type your title:",
+        "ask_days": "Which conference day(s) will you attend? Select all that apply, then tap Done.",
+        "days_done": "✅ Done",
+        "days_need_one": "Please select at least one conference day.",
+        "ask_referral": "How did you hear about this event?",
+        "ask_other_referral": "Please tell us how you heard about this event:",
+        "ask_region": "Which region or city are you from?",
+        "ask_trainee": "Are you a student, intern, resident, or fellow?",
+        "ask_trainee_category": "Which category best describes you?",
+        "yes": "Yes",
+        "no": "No",
+        "menu_update": "📝 Complete registration details",
+        "update_prompt": "Please complete your registration details so we have your full attendee information.",
+        "update_saved": "✅ Your registration details have been updated.",
+        "ask_name": "Please type your *full name, including your grandfather’s name*, as it should appear on your certificate:",
         "bad_name": "Please enter your full name (at least 3 characters).",
-        "ask_phone": "2/6 - Your *phone number* (example: +251911234567):",
+        "ask_phone": "Your *phone number* (example: +251911234567):",
         "bad_phone": "That phone number doesn't look right. Please try again.",
-        "ask_email": "3/6 - Your *email address*:",
+        "ask_email": "Your *email address*:",
         "bad_email": "That email doesn't look right. Please try again.",
-        "ask_role": "4/6 - Select your *profession*:",
-        "ask_institution": "5/6 - Your *institution* (hospital, university, organization):",
+        "ask_role": "Select your *profession*:",
+        "ask_institution": "Your *institution* (hospital, university, organization):",
         "bad_institution": "Please enter your institution name.",
-        "ask_mode": "6/6 - How will you attend?",
+        "ask_mode": "How will you attend?",
         "confirm_title": "Please check your details:",
         "label_name": "Name",
         "label_phone": "Phone",
@@ -46,6 +61,7 @@ TEXTS = {
             "Available commands:\n"
             "/start - register for the conference\n"
             "/myqr - show my QR code\n"
+            "/update - complete or update registration details\n"
             "/cancel - cancel registration\n"
             "/schedule - conference program\n"
             "/now - what is on right now\n"
@@ -65,6 +81,17 @@ TEXTS = {
             "📧 Email: ethiopiastrokefoundation@gmail.com\n"
             "📞 Phone: +251963333388 or +251955235523"
         ),
+        "title_other": "Other (type your title)",
+        "referral_invitation": "Invitation from the organizers",
+        "referral_colleague": "Colleague",
+        "referral_organization": "Employer or university",
+        "referral_social": "Social media",
+        "referral_email": "Email",
+        "referral_other": "Other",
+        "trainee_student": "Student",
+        "trainee_intern": "Intern",
+        "trainee_resident": "Resident",
+        "trainee_fellow": "Fellow",
         # ----- Part 2: schedule -----
         "schedule_pick": "📅 <b>Conference schedule</b>\nChoose a day:",
         "page_of": "Page {page}/{pages}",
@@ -95,16 +122,31 @@ TEXTS = {
             "📅 ኖቬምበር 1-4, 2026\n📍 አዳዋ ቪክትሪ አዳራሽ፣ አዲስ አበባ\n\n"
             "እንመዝግብዎ። በማንኛውም ጊዜ /cancel ብለው መሰረዝ ይችላሉ።"
         ),
-        "ask_name": "1/6 - እባክዎ *ሙሉ ስምዎን* ያስገቡ (በምስክር ወረቀትዎ ላይ እንደሚጻፍ)፦",
+        "ask_title": "ከስምዎ በፊት ምን የክብር መጠሪያ ይጠቀሙ?",
+        "ask_other_title": "እባክዎ የክብር መጠሪያዎን ያስገቡ፦",
+        "ask_days": "የሚሳተፉባቸውን የጉባኤ ቀን(ዎች) ይምረጡ፤ ከዚያ ተጠናቋልን ይጫኑ።",
+        "days_done": "✅ ተጠናቋል",
+        "days_need_one": "እባክዎ ቢያንስ አንድ የጉባኤ ቀን ይምረጡ።",
+        "ask_referral": "ስለዚህ ዝግጅት እንዴት ሰሙ?",
+        "ask_other_referral": "ስለዚህ ዝግጅት እንዴት እንደሰሙ ይጻፉ፦",
+        "ask_region": "ከየትኛው ክልል ወይም ከተማ ነዎት?",
+        "ask_trainee": "ተማሪ፣ ሰልጣኝ፣ ሬዚደንት ወይም ፌሎው ነዎት?",
+        "ask_trainee_category": "ከእነዚህ ውስጥ የትኛው ይመለከትዎታል?",
+        "yes": "አዎ",
+        "no": "አይ",
+        "menu_update": "📝 የምዝገባ መረጃን ያሟሉ",
+        "update_prompt": "ሙሉ የተሳታፊ መረጃዎን ለማስቀመጥ እባክዎ የምዝገባ መረጃዎን ያሟሉ።",
+        "update_saved": "✅ የምዝገባ መረጃዎ ተዘምኗል።",
+        "ask_name": "እባክዎ በምስክር ወረቀትዎ ላይ እንደሚጻፍ *የአያት ስምዎን ጨምሮ ሙሉ ስምዎን* ያስገቡ፦",
         "bad_name": "እባክዎ ሙሉ ስምዎን ያስገቡ (ቢያንስ 3 ፊደላት)።",
-        "ask_phone": "2/6 - *የስልክ ቁጥርዎን* ያስገቡ (ለምሳሌ +251911234567)፦",
+        "ask_phone": "*የስልክ ቁጥርዎን* ያስገቡ (ለምሳሌ +251911234567)፦",
         "bad_phone": "የስልክ ቁጥሩ ትክክል አይመስልም። እባክዎ እንደገና ያስገቡ።",
-        "ask_email": "3/6 - *የኢሜይል አድራሻዎን* ያስገቡ፦",
+        "ask_email": "*የኢሜይል አድራሻዎን* ያስገቡ፦",
         "bad_email": "ኢሜይሉ ትክክል አይመስልም። እባክዎ እንደገና ያስገቡ።",
-        "ask_role": "4/6 - *ሙያዎን* ይምረጡ፦",
-        "ask_institution": "5/6 - *የሚሰሩበት ወይም የሚማሩበት ተቋም* (ሆስፒታል፣ ዩኒቨርሲቲ፣ ድርጅት)፦",
+        "ask_role": "*ሙያዎን* ይምረጡ፦",
+        "ask_institution": "*የሚሰሩበት ወይም የሚማሩበት ተቋም* (ሆስፒታል፣ ዩኒቨርሲቲ፣ ድርጅት)፦",
         "bad_institution": "እባክዎ የተቋምዎን ስም ያስገቡ።",
-        "ask_mode": "6/6 - እንዴት ይሳተፋሉ?",
+        "ask_mode": "እንዴት ይሳተፋሉ?",
         "confirm_title": "እባክዎ መረጃዎን ያረጋግጡ፦",
         "label_name": "ስም",
         "label_phone": "ስልክ",
@@ -128,6 +170,7 @@ TEXTS = {
             "ያሉ ትዕዛዞች፦\n"
             "/start - ለጉባኤው ይመዝገቡ\n"
             "/myqr - QR ኮዴን አሳይ\n"
+            "/update - የምዝገባ መረጃን ያሟሉ ወይም ያዘምኑ\n"
             "/cancel - ምዝገባን ሰርዝ\n"
             "/schedule - የጉባኤው መርሐ ግብር\n"
             "/now - አሁን እየተካሄደ ያለው\n"
@@ -147,6 +190,17 @@ TEXTS = {
             "📧 ኢሜይል: ethiopiastrokefoundation@gmail.com\n"
             "📞 ስልክ: +251963333388 ወይም +251955235523"
         ),
+        "title_other": "ሌላ (የክብር መጠሪያዎን ይጻፉ)",
+        "referral_invitation": "ከአዘጋጆቹ ግብዣ",
+        "referral_colleague": "ከሥራ ባልደረባ",
+        "referral_organization": "ከቀጣሪ ወይም ዩኒቨርሲቲ",
+        "referral_social": "ማህበራዊ ሚዲያ",
+        "referral_email": "ኢሜይል",
+        "referral_other": "ሌላ",
+        "trainee_student": "ተማሪ",
+        "trainee_intern": "ሰልጣኝ",
+        "trainee_resident": "ሬዚደንት",
+        "trainee_fellow": "ፌሎው",
         # ----- Part 2: schedule -----
         "schedule_pick": "📅 <b>የጉባኤው መርሐ ግብር</b>\nቀን ይምረጡ፦",
         "page_of": "ገጽ {page}/{pages}",
@@ -184,6 +238,31 @@ ROLES = [
 MODES = [
     ("in_person", "🏛 In person", "🏛 በአካል"),
     ("virtual", "💻 Virtual (online)", "💻 በበይነመረብ"),
+]
+
+TITLES = [
+    ("dr", "Dr.", "ዶ/ር"),
+    ("prof", "Prof.", "ፕሮፌሰር"),
+    ("mr", "Mr.", "አቶ"),
+    ("ms", "Ms.", "ወ/ሮ"),
+    ("mrs", "Mrs.", "ወ/ወ"),
+    ("other", "Other (type your title)", "ሌላ (የክብር መጠሪያዎን ይጻፉ)"),
+]
+
+REFERRAL_SOURCES = [
+    ("invitation", "Invitation from the organizers", "ከአዘጋጆቹ ግብዣ"),
+    ("colleague", "Colleague", "ከሥራ ባልደረባ"),
+    ("organization", "Employer or university", "ከቀጣሪ ወይም ዩኒቨርሲቲ"),
+    ("social", "Social media", "ማህበራዊ ሚዲያ"),
+    ("email", "Email", "ኢሜይል"),
+    ("other", "Other", "ሌላ"),
+]
+
+TRAINEE_CATEGORIES = [
+    ("student", "Student", "ተማሪ"),
+    ("intern", "Intern", "ሰልጣኝ"),
+    ("resident", "Resident", "ሬዚደንት"),
+    ("fellow", "Fellow", "ፌሎው"),
 ]
 
 
