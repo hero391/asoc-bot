@@ -27,21 +27,27 @@ from texts import DAY_INFO, KIND_ICONS, day_label, t, track_label
 # Telegram allows 4096 characters per message. We stay well below it.
 PAGE_LIMIT = 3300
 log = logging.getLogger(__name__)
+_loaded_schedule_signature = None
 
 
 def ensure_schedule_loaded() -> int:
-    """Load the configured CSV when the active database has no program rows."""
-    count = db.count_sessions()
-    if count:
-        return count
+    """Load the configured CSV when its source changes or the database is empty."""
+    global _loaded_schedule_signature
 
     csv_path = Path(config.SESSIONS_CSV)
     if not csv_path.is_file():
         raise FileNotFoundError(f"Conference schedule CSV not found: {csv_path}")
 
+    stat = csv_path.stat()
+    signature = (stat.st_mtime_ns, stat.st_size)
+    count = db.count_sessions()
+    if count and signature == _loaded_schedule_signature:
+        return count
+
     count = import_csv(str(csv_path))
     if not count:
         raise ValueError(f"Conference schedule CSV contains no sessions: {csv_path}")
+    _loaded_schedule_signature = signature
     return count
 
 

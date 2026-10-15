@@ -8,9 +8,10 @@ TEXTS = {
     "en": {
         "choose_language": "Please choose your language / እባክዎ ቋንቋ ይምረጡ",
         "welcome": (
-            "👋 Welcome to the *African Stroke Organization Conference 2026*\n"
-            "_Stroke Care Transformation in Africa_\n\n"
-            "📅 November 1-4, 2026\n📍 Adawa Victory Hall, Addis Ababa\n\n"
+            "👋 Welcome to the *ESF 2026 Comprehensive Stroke Care Symposium*\n"
+            "_Establishing comprehensive stroke care in low- and middle-income countries_\n\n"
+            "📅 November 2 & 3, 2026\n"
+            "📍 Adwa Memorial Museum Multi Purpose Hall\n\n"
             "Let's register you. You can type /cancel at any time."
         ),
         "ask_title": "What title should appear with your name?",
@@ -28,16 +29,16 @@ TEXTS = {
         "menu_update": "📝 Complete registration details",
         "update_prompt": "Please complete your registration details so we have your full attendee information.",
         "update_saved": "✅ Your registration details have been updated.",
-        "ask_name": "Please type your *full name, including your grandfather’s name*, as it should appear on your certificate:",
+        "ask_name": "1/6 - Please type your *full name* (as it should appear on your certificate):",
         "bad_name": "Please enter your full name (at least 3 characters).",
-        "ask_phone": "Your *phone number* (example: +251911234567):",
+        "ask_phone": "2/6 - Your *phone number* (example: +251911234567):",
         "bad_phone": "That phone number doesn't look right. Please try again.",
-        "ask_email": "Your *email address*:",
+        "ask_email": "3/6 - Your *email address*:",
         "bad_email": "That email doesn't look right. Please try again.",
-        "ask_role": "Select your *profession*:",
-        "ask_institution": "Your *institution* (hospital, university, organization):",
+        "ask_role": "4/6 - Select your *profession*:",
+        "ask_institution": "5/6 - Your *institution* (hospital, university, organization):",
         "bad_institution": "Please enter your institution name.",
-        "ask_mode": "How will you attend?",
+        "ask_mode": "6/6 - How will you attend?",
         "confirm_title": "Please check your details:",
         "label_name": "Name",
         "label_phone": "Phone",
@@ -59,18 +60,18 @@ TEXTS = {
         "cancelled": "Registration cancelled. Send /start to begin again.",
         "help": (
             "Available commands:\n"
-            "/start - register for the conference\n"
+            "/start - register for the symposium\n"
             "/myqr - show my QR code\n"
             "/update - complete or update registration details\n"
             "/cancel - cancel registration\n"
-            "/schedule - conference program\n"
+            "/schedule - symposium program\n"
             "/now - what is on right now\n"
             "/language - change language\n"
             "/help - this message"
         ),
-        "main_menu": "Welcome! Choose an option:",
-        "menu_register": "📝 Register for the Conference",
-        "menu_program": "📅 Conference Program",
+        "main_menu": "Welcome to the ESF 2026 symposium! Choose an option:",
+        "menu_register": "📝 Register for the Symposium",
+        "menu_program": "📅 Symposium Program",
         "menu_venue": "📍 Venue & Directions",
         "menu_contact": "📞 Contact the Organizers",
         "menu_myqr": "🪪 My QR Code",
@@ -93,7 +94,7 @@ TEXTS = {
         "trainee_resident": "Resident",
         "trainee_fellow": "Fellow",
         # ----- Part 2: schedule -----
-        "schedule_pick": "📅 <b>Conference schedule</b>\nChoose a day:",
+        "schedule_pick": "📅 <b>Symposium schedule</b>\nChoose a day:",
         "page_of": "Page {page}/{pages}",
         "btn_all_tracks": "All",
         "btn_prev": "◀ Prev",
@@ -107,19 +108,19 @@ TEXTS = {
         "nothing_now": "No session is running right now.",
         "nothing_next": "That was the last session of the day.",
         "before_conf": (
-            "The conference starts on Sunday, November 1 "
-            "(registration opens at 12:00). Use /schedule to see the program."
+            "The symposium starts on Monday, November 2. Use /schedule to see the program."
         ),
-        "after_conf": "The conference has ended. Thank you for joining ASOC 2026!",
+        "after_conf": "The symposium has ended. Thank you for joining ESF 2026!",
         "language_pick": "Choose your language / ቋንቋ ይምረጡ",
         "language_set": "✅ Language set to English",
     },
     "am": {
         "choose_language": "Please choose your language / እባክዎ ቋንቋ ይምረጡ",
         "welcome": (
-            "👋 እንኳን ወደ *የአፍሪካ ስትሮክ ድርጅት ጉባኤ 2026* በደህና መጡ\n"
-            "_በአፍሪካ የስትሮክ ሕክምና ለውጥ_\n\n"
-            "📅 ኖቬምበር 1-4, 2026\n📍 አዳዋ ቪክትሪ አዳራሽ፣ አዲስ አበባ\n\n"
+            "👋 እንኳን ወደ *ESF 2026 Comprehensive Stroke Care Symposium* በደህና መጡ\n"
+            "_በዝቅተኛና መካከለኛ ገቢ ባላቸው አገሮች የተሟላ የስትሮክ ሕክምና ማቋቋም_\n\n"
+            "📅 ኖቬምበር 2 እና 3፣ 2026\n"
+            "📍 አድዋ መታሰቢያ ሙዚየም ሁለገብ አዳራሽ\n\n"
             "እንመዝግብዎ። በማንኛውም ጊዜ /cancel ብለው መሰረዝ ይችላሉ።"
         ),
         "ask_title": "ከስምዎ በፊት ምን የክብር መጠሪያ ይጠቀሙ?",
@@ -137,16 +138,16 @@ TEXTS = {
         "menu_update": "📝 የምዝገባ መረጃን ያሟሉ",
         "update_prompt": "ሙሉ የተሳታፊ መረጃዎን ለማስቀመጥ እባክዎ የምዝገባ መረጃዎን ያሟሉ።",
         "update_saved": "✅ የምዝገባ መረጃዎ ተዘምኗል።",
-        "ask_name": "እባክዎ በምስክር ወረቀትዎ ላይ እንደሚጻፍ *የአያት ስምዎን ጨምሮ ሙሉ ስምዎን* ያስገቡ፦",
+        "ask_name": "1/6 - እባክዎ *ሙሉ ስምዎን* ያስገቡ (በምስክር ወረቀትዎ ላይ እንደሚጻፍ)፦",
         "bad_name": "እባክዎ ሙሉ ስምዎን ያስገቡ (ቢያንስ 3 ፊደላት)።",
-        "ask_phone": "*የስልክ ቁጥርዎን* ያስገቡ (ለምሳሌ +251911234567)፦",
+        "ask_phone": "2/6 - *የስልክ ቁጥርዎን* ያስገቡ (ለምሳሌ +251911234567)፦",
         "bad_phone": "የስልክ ቁጥሩ ትክክል አይመስልም። እባክዎ እንደገና ያስገቡ።",
-        "ask_email": "*የኢሜይል አድራሻዎን* ያስገቡ፦",
+        "ask_email": "3/6 - *የኢሜይል አድራሻዎን* ያስገቡ፦",
         "bad_email": "ኢሜይሉ ትክክል አይመስልም። እባክዎ እንደገና ያስገቡ።",
-        "ask_role": "*ሙያዎን* ይምረጡ፦",
-        "ask_institution": "*የሚሰሩበት ወይም የሚማሩበት ተቋም* (ሆስፒታል፣ ዩኒቨርሲቲ፣ ድርጅት)፦",
+        "ask_role": "4/6 - *ሙያዎን* ይምረጡ፦",
+        "ask_institution": "5/6 - *የሚሰሩበት ወይም የሚማሩበት ተቋም* (ሆስፒታል፣ ዩኒቨርሲቲ፣ ድርጅት)፦",
         "bad_institution": "እባክዎ የተቋምዎን ስም ያስገቡ።",
-        "ask_mode": "እንዴት ይሳተፋሉ?",
+        "ask_mode": "6/6 - እንዴት ይሳተፋሉ?",
         "confirm_title": "እባክዎ መረጃዎን ያረጋግጡ፦",
         "label_name": "ስም",
         "label_phone": "ስልክ",
@@ -168,18 +169,18 @@ TEXTS = {
         "cancelled": "ምዝገባ ተሰርዟል። እንደገና ለመጀመር /start ይጠቀሙ።",
         "help": (
             "ያሉ ትዕዛዞች፦\n"
-            "/start - ለጉባኤው ይመዝገቡ\n"
+            "/start - ለሲምፖዚየሙ ይመዝገቡ\n"
             "/myqr - QR ኮዴን አሳይ\n"
             "/update - የምዝገባ መረጃን ያሟሉ ወይም ያዘምኑ\n"
             "/cancel - ምዝገባን ሰርዝ\n"
-            "/schedule - የጉባኤው መርሐ ግብር\n"
+            "/schedule - የሲምፖዚየሙ መርሐ ግብር\n"
             "/now - አሁን እየተካሄደ ያለው\n"
             "/language - ቋንቋ ቀይር\n"
             "/help - ይህ መልእክት"
         ),
         "main_menu": "እንኳን ደህና መጡ! አንድ አማራጭ ይምረጡ፦",
-        "menu_register": "📝 ለጉባኤው ይመዝገቡ",
-        "menu_program": "📅 የጉባኤው መርሐ ግብር",
+        "menu_register": "📝 ለሲምፖዚየሙ ይመዝገቡ",
+        "menu_program": "📅 የሲምፖዚየሙ መርሐ ግብር",
         "menu_venue": "📍 ቦታ እና አቅጣጫ",
         "menu_contact": "📞 አዘጋጆችን ያግኙ",
         "menu_myqr": "🪪 የእኔ QR ኮድ",
@@ -202,7 +203,7 @@ TEXTS = {
         "trainee_resident": "ሬዚደንት",
         "trainee_fellow": "ፌሎው",
         # ----- Part 2: schedule -----
-        "schedule_pick": "📅 <b>የጉባኤው መርሐ ግብር</b>\nቀን ይምረጡ፦",
+        "schedule_pick": "📅 <b>የሲምፖዚየሙ መርሐ ግብር</b>\nቀን ይምረጡ፦",
         "page_of": "ገጽ {page}/{pages}",
         "btn_all_tracks": "ሁሉም",
         "btn_prev": "◀ ቀዳሚ",
@@ -216,10 +217,10 @@ TEXTS = {
         "nothing_now": "በአሁኑ ሰዓት የሚካሄድ ክፍለ ጊዜ የለም።",
         "nothing_next": "ይህ የዛሬው የመጨረሻ ክፍለ ጊዜ ነበር።",
         "before_conf": (
-            "ጉባኤው እሑድ ኖቬምበር 1 ይጀምራል (ምዝገባ ከ12:00 ጀምሮ)። "
+            "ሲምፖዚየሙ ሰኞ ኖቬምበር 2 ይጀምራል። "
             "መርሐ ግብሩን ለማየት /schedule ይጠቀሙ።"
         ),
-        "after_conf": "ጉባኤው ተጠናቋል። በASOC 2026 ስለተሳተፉ እናመሰግናለን!",
+        "after_conf": "ሲምፖዚየሙ ተጠናቋል። በESF 2026 ስለተሳተፉ እናመሰግናለን!",
         "language_pick": "Choose your language / ቋንቋ ይምረጡ",
         "language_set": "✅ ቋንቋ ወደ አማርኛ ተቀይሯል",
     },
@@ -233,11 +234,6 @@ ROLES = [
     ("researcher", "🔬 Researcher", "🔬 ተመራማሪ"),
     ("administrator", "🏥 Hospital administrator", "🏥 የሆስፒታል አስተዳዳሪ"),
     ("other", "👥 Other healthcare professional", "👥 ሌላ የጤና ባለሙያ"),
-]
-
-MODES = [
-    ("in_person", "🏛 In person", "🏛 በአካል"),
-    ("virtual", "💻 Virtual (online)", "💻 በበይነመረብ"),
 ]
 
 TITLES = [
@@ -265,6 +261,11 @@ TRAINEE_CATEGORIES = [
     ("fellow", "Fellow", "ፌሎው"),
 ]
 
+MODES = [
+    ("in_person", "🏛 In person", "🏛 በአካል"),
+    ("virtual", "💻 Virtual (online)", "💻 በበይነመረብ"),
+]
+
 
 def t(lang: str, key: str, **kwargs) -> str:
     text = TEXTS.get(lang, TEXTS["en"]).get(key) or TEXTS["en"][key]
@@ -282,13 +283,14 @@ def label_for(options, key: str, lang: str) -> str:
 
 # ===== Part 2: schedule constants =====
 
-# (date, English button label, Amharic button label) - Day 0 is the pre-conference
-DAY_INFO = [
+# All dates present in the supplied program, including archived pre/post-symposium rows.
+PROGRAM_DAY_INFO = [
     ("2026-11-01", "Day 0 · Sun, Nov 1 · Pre-conference", "ቀን 0 · እሑድ፣ ኖቬምበር 1 · ቅድመ ጉባኤ"),
     ("2026-11-02", "Day 1 · Mon, Nov 2", "ቀን 1 · ሰኞ፣ ኖቬምበር 2"),
     ("2026-11-03", "Day 2 · Tue, Nov 3", "ቀን 2 · ማክሰኞ፣ ኖቬምበር 3"),
     ("2026-11-04", "Day 3 · Wed, Nov 4", "ቀን 3 · ረቡዕ፣ ኖቬምበር 4"),
 ]
+DAY_INFO = PROGRAM_DAY_INFO[1:3]
 
 # track key -> (English, Amharic). "common" rows (breaks, lunch, registration)
 # show under every track and are not listed here.
@@ -298,6 +300,10 @@ TRACKS = {
     "nursing": ("Nursing symposium", "የነርሶች ሲምፖዚየም"),
     "community": ("Life after stroke", "ከስትሮክ በኋላ ሕይወት"),
     "education": ("Education track", "የትምህርት ክፍለ ጊዜ"),
+    "symposium": (
+        "ESF Comprehensive Stroke Care Symposium",
+        "የኢትዮጵያ ስትሮክ ፋውንዴሽን የተሟላ የስትሮክ ሕክምና ሲምፖዚየም",
+    ),
 }
 
 KIND_ICONS = {

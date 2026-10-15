@@ -14,13 +14,13 @@ import sys
 
 import config
 import db
-from texts import DAY_INFO, KIND_ICONS, TRACKS
+from texts import KIND_ICONS, PROGRAM_DAY_INFO, TRACKS
 
 REQUIRED = ["date", "start", "end", "track", "kind", "title_en"]
 OPTIONAL = ["group", "title_am", "speaker"]
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-VALID_DATES = {d[0] for d in DAY_INFO}
+VALID_DATES = {d[0] for d in PROGRAM_DAY_INFO}
 VALID_TRACKS = set(TRACKS) | {"common"}
 VALID_KINDS = set(KIND_ICONS)
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         raise SystemExit(f"\nERROR: {err}\n")
 
     print(f"\nLoaded {total} sessions from {file_path}\n")
-    for date, en, _am in DAY_INFO:
+    for date, en, _am in PROGRAM_DAY_INFO:
         count = len(db.get_sessions(date))
         print(f"   {en}: {count} items")
     print("\nRestart the bot to be safe, then try /schedule in Telegram.")

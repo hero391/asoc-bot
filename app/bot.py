@@ -1,4 +1,4 @@
-"""ASOC 2026 conference bot - Part 1 (registration + QR) and Part 2 (schedule).
+"""ESF 2026 symposium bot - Part 1 (registration + QR) and Part 2 (schedule).
 
 Run with:  python bot.py
 """
@@ -163,7 +163,8 @@ def ordered_days(selected_days: set[str]) -> str:
 
 async def ask_days(message, context, *, prefix: str, selected_days=None):
     lang = lang_of(context)
-    selected_days = set(selected_days or ())
+    active_dates = {date for date, _en, _am in DAY_INFO}
+    selected_days = set(selected_days or ()) & active_dates
     context.user_data["selected_days"] = selected_days
     await message.reply_text(
         t(lang, "ask_days"),
@@ -197,13 +198,17 @@ async def send_qr(bot, chat_id: int, reg, text: str):
     )
 
 
-async def edit_menu_message(query, text: str, reply_markup=None):
+async def edit_menu_message(query, text: str, reply_markup=None, parse_mode=None):
     """Edit either the text menu or the caption menu attached to a QR photo."""
     message = query.message
     if message and message.text is None and message.caption is not None:
-        await query.edit_message_caption(caption=text, reply_markup=reply_markup)
+        await query.edit_message_caption(
+            caption=text, parse_mode=parse_mode, reply_markup=reply_markup
+        )
         return
-    await query.edit_message_text(text, reply_markup=reply_markup)
+    await query.edit_message_text(
+        text, parse_mode=parse_mode, reply_markup=reply_markup
+    )
 
 
 # ---------- conversation steps ----------
@@ -220,14 +225,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 ]
             ]
         )
-        await update.effective_message.reply_text(
-            t(lang, "update_prompt"), reply_markup=keyboard
-        )
+        with config.SYMPOSIUM_POSTER.open("rb") as poster:
+            await update.effective_message.reply_photo(
+                photo=poster, caption=t(lang, "update_prompt"), reply_markup=keyboard
+            )
         return ConversationHandler.END
-    await update.effective_message.reply_text(
-        t(lang, "main_menu"),
-        reply_markup=main_menu_keyboard(lang, registered=reg is not None),
-    )
+    with config.SYMPOSIUM_POSTER.open("rb") as poster:
+        await update.effective_message.reply_photo(
+            photo=poster,
+            caption=t(lang, "main_menu"),
+            reply_markup=main_menu_keyboard(lang, registered=reg is not None),
+        )
     return ConversationHandler.END
 
 
@@ -237,7 +245,7 @@ async def register_from_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     reg = db.get_registration(update.effective_user.id)
     if reg:
         lang = reg["language"]
-        await query.edit_message_text(t(lang, "already"))
+        await edit_menu_message(query, t(lang, "already"))
         await send_qr(
             context.bot,
             update.effective_chat.id,
@@ -255,7 +263,7 @@ async def register_from_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
             ]
         ]
     )
-    await query.edit_message_text(t("en", "choose_language"), reply_markup=keyboard)
+    await edit_menu_message(query, t("en", "choose_language"), reply_markup=keyboard)
     return LANG
 
 
@@ -315,8 +323,11 @@ async def choose_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     lang = query.data.split(":")[1]
     context.user_data["lang"] = lang
-    await query.edit_message_text(
-        t(lang, "welcome"), parse_mode=ParseMode.MARKDOWN
+    await edit_menu_message(
+        query,
+        t(lang, "welcome"),
+        reply_markup=None,
+        parse_mode=ParseMode.MARKDOWN,
     )
     await query.message.reply_text(
         t(lang, "ask_title"),
@@ -833,17 +844,26 @@ async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ---------- start the bot ----------
+async def set_bot_name(application):
+    await application.bot.set_my_name(config.CONFERENCE_NAME)
+
+
 def build_app():
     config.check_config()
     db.init_db()
 
-    # Load the conference program from CSV when the database is empty.
+    # Refresh the program when the CSV changes, including on a new deployment.
     try:
         count = schedule_handlers.ensure_schedule_loaded()
         log.info("Conference schedule ready: %d sessions", count)
     except (FileNotFoundError, ValueError):
         log.exception("Conference schedule could not be loaded; /schedule will retry")
-    app = ApplicationBuilder().token(config.BOT_TOKEN).build()
+    app = (
+        ApplicationBuilder()
+        .token(config.BOT_TOKEN)
+        .post_init(set_bot_name)
+        .build()
+    )
 
     text_only = filters.TEXT & ~filters.COMMAND
     registration = ConversationHandler(

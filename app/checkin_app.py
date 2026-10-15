@@ -26,7 +26,13 @@ from waitress import serve
 import config
 import db
 from qr_utils import verify_token
-from texts import DAY_INFO, MODES, REFERRAL_SOURCES, ROLES, TRAINEE_CATEGORIES
+from texts import (
+    MODES,
+    PROGRAM_DAY_INFO,
+    REFERRAL_SOURCES,
+    ROLES,
+    TRAINEE_CATEGORIES,
+)
 
 
 def conference_day():
@@ -125,7 +131,7 @@ def export_attendance_days(value):
             f"{datetime.strptime(date, '%Y-%m-%d').strftime('%A, %B')} "
             f"{int(date[-2:])}, {date[:4]}"
         )
-        for index, (date, _english_label, _amharic_label) in enumerate(DAY_INFO)
+        for index, (date, _english_label, _amharic_label) in enumerate(PROGRAM_DAY_INFO)
     }
     return ", ".join(
         day_labels[date]
@@ -204,8 +210,8 @@ def export_registrations():
     worksheet.sheet_view.showGridLines = False
     worksheet.freeze_panes = "A2"
     worksheet.sheet_properties.tabColor = "145C4C"
-    workbook.properties.title = "ASOC 2026 Registration List"
-    workbook.properties.subject = "Conference attendee registrations"
+    workbook.properties.title = f"{config.CONFERENCE_NAME} Registration List"
+    workbook.properties.subject = f"{config.CONFERENCE_NAME} attendee registrations"
 
     header_fill = PatternFill("solid", fgColor="145C4C")
     header_font = Font(name="Aptos", bold=True, color="FFFFFF", size=10)
@@ -268,7 +274,7 @@ def export_registrations():
         output,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         as_attachment=True,
-        download_name=f"ASOC-2026-registrations-{filename_date}.xlsx",
+        download_name=f"ESF-2026-registrations-{filename_date}.xlsx",
     )
 
 

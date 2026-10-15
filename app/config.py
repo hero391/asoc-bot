@@ -32,10 +32,13 @@ TIMEZONE = ZoneInfo("Africa/Addis_Ababa")
 # Leave empty (or delete the line in .env) when the bot goes live.
 FAKE_NOW = os.getenv("FAKE_NOW", "").strip()
 
-CONFERENCE_NAME = "African Stroke Organization Conference 2026"
-CONFERENCE_THEME = "Stroke Care Transformation in Africa"
-CONFERENCE_DATES = "November 1-4, 2026"
-CONFERENCE_VENUE = "Adawa Victory Hall, Addis Ababa"
+CONFERENCE_NAME = "ESF 2026 Comprehensive Stroke Care Symposium"
+CONFERENCE_THEME = (
+    "Establishing comprehensive stroke care in low- and middle-income countries"
+)
+CONFERENCE_DATES = "November 2 & 3, 2026"
+CONFERENCE_VENUE = "Adwa Memorial Museum Multi Purpose Hall"
+SYMPOSIUM_POSTER = PROJECT_ROOT / "app" / "static" / "symposium-poster.png"
 
 
 def check_config():

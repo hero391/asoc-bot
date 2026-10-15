@@ -13,9 +13,10 @@ sys.path.insert(0, str(APP_DIR))
 
 import checkin_app
 import bot
+import schedule_import
 import schedule_handlers
 from telegram.ext import ConversationHandler
-from texts import t
+from texts import DAY_INFO, t
 
 
 class RegistrationExportTests(unittest.TestCase):
@@ -46,7 +47,7 @@ class RegistrationExportTests(unittest.TestCase):
             "phone": "+251963333388",
             "attendance_mode": "in_person",
             "title": "Dr.",
-            "attendance_days": "2026-11-01,2026-11-03",
+            "attendance_days": "2026-11-02,2026-11-03",
             "referral_source": "invitation",
             "region": "Addis Ababa",
             "trainee_status": "no",
@@ -63,10 +64,14 @@ class RegistrationExportTests(unittest.TestCase):
             response.mimetype,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        self.assertIn("ASOC-2026-registrations-", response.headers["Content-Disposition"])
+        self.assertIn("ESF-2026-registrations-", response.headers["Content-Disposition"])
         self.assertEqual(response.headers["Cache-Control"], "no-store")
 
         workbook = load_workbook(BytesIO(response.data), data_only=False)
+        self.assertEqual(
+            workbook.properties.title,
+            "ESF 2026 Comprehensive Stroke Care Symposium Registration List",
+        )
         worksheet = workbook["Registrations"]
         self.assertEqual(worksheet.freeze_panes, "A2")
         self.assertEqual(worksheet.auto_filter.ref, "A1:N2")
@@ -94,7 +99,11 @@ class RegistrationExportTests(unittest.TestCase):
         self.assertEqual(worksheet["B2"].value, "Dr.")
         self.assertEqual(
             worksheet["H2"].value,
-            "Day 0 — Sunday, November 1, 2026, Day 2 — Tuesday, November 3, 2026",
+            "Day 1 — Monday, November 2, 2026, Day 2 — Tuesday, November 3, 2026",
+        )
+        self.assertEqual(
+            checkin_app.export_attendance_days("2026-11-01,2026-11-04"),
+            "Day 0 — Sunday, November 1, 2026, Day 3 — Wednesday, November 4, 2026",
         )
         self.assertEqual(worksheet["I2"].value, "Invitation from the organizers")
         self.assertEqual(worksheet["J2"].value, "Addis Ababa")
@@ -127,6 +136,41 @@ class RegistrationExportTests(unittest.TestCase):
             schedule_day_keyboard.inline_keyboard[-1][0].callback_data, "menu:home"
         )
 
+    def test_schedule_and_registration_only_offer_poster_dates(self):
+        self.assertEqual(
+            [date for date, _english, _amharic in DAY_INFO],
+            ["2026-11-02", "2026-11-03"],
+        )
+        registration_keyboard = bot.days_keyboard("en", set(), "days")
+        self.assertEqual(
+            [row[0].text for row in registration_keyboard.inline_keyboard[:-1]],
+            ["Day 1 · Mon, Nov 2", "Day 2 · Tue, Nov 3"],
+        )
+        keyboard = schedule_handlers.days_keyboard("en")
+        self.assertEqual(
+            [row[0].text for row in keyboard.inline_keyboard[:-1]],
+            ["Day 1 · Mon, Nov 2", "Day 2 · Tue, Nov 3"],
+        )
+
+    def test_schedule_csv_refreshes_existing_database(self):
+        with (
+            patch.object(schedule_handlers, "_loaded_schedule_signature", None),
+            patch.object(schedule_handlers.db, "count_sessions", return_value=87),
+            patch.object(schedule_handlers, "import_csv", return_value=90) as importer,
+        ):
+            count = schedule_handlers.ensure_schedule_loaded()
+
+        self.assertEqual(count, 90)
+        importer.assert_called_once_with(bot.config.SESSIONS_CSV)
+
+    def test_updated_csv_keeps_archived_rows_but_accepts_new_symposium_track(self):
+        rows, problems = schedule_import.read_and_check(bot.config.SESSIONS_CSV)
+
+        self.assertEqual(problems, [])
+        self.assertIn("2026-11-01", {row["date"] for row in rows})
+        self.assertIn("2026-11-04", {row["date"] for row in rows})
+        self.assertIn("symposium", {row["track"] for row in rows})
+
     def test_registered_menu_offers_update_details(self):
         keyboard = bot.main_menu_keyboard("en", registered=True)
 
@@ -146,7 +190,7 @@ class RegistrationExportTests(unittest.TestCase):
         registration.update(
             {
                 "title": "Dr.",
-                "attendance_days": "2026-11-01",
+                "attendance_days": "2026-11-02",
                 "referral_source": "invitation",
                 "region": "Addis Ababa",
                 "trainee_status": "no",
@@ -163,6 +207,7 @@ class RegistrationExportTests(unittest.TestCase):
         ):
             application = bot.build_app()
 
+        self.assertIs(application.post_init, bot.set_bot_name)
         conversations = [
             handler
             for handlers in application.handlers.values()
