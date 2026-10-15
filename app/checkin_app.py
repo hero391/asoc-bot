@@ -2,8 +2,9 @@
 import hmac
 import os
 import secrets
+from datetime import datetime, timezone
 from functools import wraps
-from datetime import datetime
+from io import BytesIO
 
 from flask import (
     Flask,
@@ -13,14 +14,19 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     session,
     url_for,
 )
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
 from waitress import serve
 
 import config
 import db
 from qr_utils import verify_token
+from texts import MODES, ROLES
 
 
 def conference_day():
@@ -104,6 +110,13 @@ def attendee_json(attendee, attendance_date):
     }
 
 
+def export_label(options, value):
+    for key, label, _amharic_label in options:
+        if key == value:
+            return label.split(maxsplit=1)[-1]
+    return str(value).replace("_", " ").title()
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if not config.CHECKIN_PASSWORD:
@@ -140,6 +153,100 @@ def logout():
 @staff_required
 def index():
     return render_template("checkin.html", csrf_token=session["csrf_token"])
+
+
+@app.get("/export/registrations.xlsx")
+@staff_required
+def export_registrations():
+    headers = [
+        "Timestamp",
+        "Title",
+        "Full name, including your grandfather’s name.",
+        "Profession",
+        "Organization",
+        "Email",
+        "Phone number",
+        "Which conference day will you attend",
+        "How did you hear about this event",
+        "Region",
+        "Are you a student, intern, resident, or fellow",
+        "Registration code",
+        "Registration status",
+        "Attendance type",
+    ]
+    registrations = db.get_registrations_for_export()
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = "Registrations"
+    worksheet.sheet_view.showGridLines = False
+    worksheet.freeze_panes = "A2"
+    worksheet.sheet_properties.tabColor = "145C4C"
+    workbook.properties.title = "ASOC 2026 Registration List"
+    workbook.properties.subject = "Conference attendee registrations"
+
+    header_fill = PatternFill("solid", fgColor="145C4C")
+    header_font = Font(name="Aptos", bold=True, color="FFFFFF", size=10)
+    header_border = Border(
+        bottom=Side(style="medium", color="D9AD58")
+    )
+    for column, header in enumerate(headers, start=1):
+        cell = worksheet.cell(row=1, column=column, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(vertical="center", wrap_text=True)
+        cell.border = header_border
+    worksheet.row_dimensions[1].height = 42
+
+    widths = [21, 14, 36, 24, 30, 34, 20, 38, 34, 20, 36, 20, 20, 20]
+    for column, width in enumerate(widths, start=1):
+        worksheet.column_dimensions[get_column_letter(column)].width = width
+
+    for row_number, registration in enumerate(registrations, start=2):
+        created_at = datetime.fromisoformat(registration["created_at"])
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        local_timestamp = created_at.astimezone(config.TIMEZONE).replace(tzinfo=None)
+        values = [
+            local_timestamp,
+            "",
+            registration["full_name"],
+            export_label(ROLES, registration["role"]),
+            registration["institution"],
+            registration["email"],
+            registration["phone"],
+            "",
+            "",
+            "",
+            "",
+            registration["reg_code"],
+            str(registration["status"]).replace("_", " ").title(),
+            export_label(MODES, registration["attendance_mode"]),
+        ]
+        for column, value in enumerate(values, start=1):
+            cell = worksheet.cell(row=row_number, column=column, value=value)
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+            if column == 1:
+                cell.number_format = "yyyy-mm-dd hh:mm"
+            else:
+                cell.number_format = "@"
+                cell.data_type = "s"
+        if row_number % 2 == 0:
+            for cell in worksheet[row_number]:
+                cell.fill = PatternFill("solid", fgColor="F3F7F5")
+
+    worksheet.auto_filter.ref = (
+        f"A1:{get_column_letter(len(headers))}{len(registrations) + 1}"
+    )
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+    filename_date = datetime.now(config.TIMEZONE).strftime("%Y%m%d")
+    return send_file(
+        output,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=f"ASOC-2026-registrations-{filename_date}.xlsx",
+    )
 
 
 @app.post("/api/lookup")

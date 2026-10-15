@@ -97,6 +97,9 @@ def days_keyboard(lang: str) -> InlineKeyboardMarkup:
         [InlineKeyboardButton(day_label(i, lang), callback_data=f"sch:d:{i}:all:0")]
         for i in range(len(DAY_INFO))
     ]
+    rows.append(
+        [InlineKeyboardButton(t(lang, "menu_back"), callback_data="menu:home")]
+    )
     return InlineKeyboardMarkup(rows)
 
 
@@ -136,6 +139,9 @@ def day_keyboard(lang, day_idx, track, page, pages, tracks) -> InlineKeyboardMar
 
     rows.append(
         [InlineKeyboardButton(t(lang, "btn_back_days"), callback_data="sch:menu")]
+    )
+    rows.append(
+        [InlineKeyboardButton(t(lang, "menu_back"), callback_data="menu:home")]
     )
     return InlineKeyboardMarkup(rows)
 

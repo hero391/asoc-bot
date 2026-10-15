@@ -188,7 +188,7 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif action == "contact":
         await edit_menu_message(
             query,
-            t(lang, "contact_unavailable"), reply_markup=back_menu_keyboard(lang)
+            t(lang, "contact_info"), reply_markup=back_menu_keyboard(lang)
         )
 
 

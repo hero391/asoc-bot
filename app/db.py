@@ -134,6 +134,20 @@ def count_registrations() -> int:
         return conn.execute("SELECT COUNT(*) FROM registrations").fetchone()[0]
 
 
+def get_registrations_for_export():
+    """Return registration and attendee details for the staff export."""
+    with get_conn() as conn:
+        return conn.execute(
+            """
+            SELECT r.created_at, r.reg_code, r.status, u.full_name, u.role,
+                   u.institution, u.email, u.phone, u.attendance_mode
+            FROM registrations r
+            JOIN users u ON u.telegram_id = r.telegram_id
+            ORDER BY r.created_at, r.id
+            """
+        ).fetchall()
+
+
 def get_registration_by_code(reg_code: str, attendance_date: str):
     """Return the minimal attendee details needed for staff QR verification."""
     with get_conn() as conn:

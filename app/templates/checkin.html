@@ -39,6 +39,13 @@
     .intro p, .card-copy { color: var(--muted); line-height: 1.6; }
     .intro p { margin: .5rem 0 0; }
     .card { margin-bottom: 1rem; padding: clamp(1.1rem, 4vw, 1.6rem); border: 1px solid #e8eeeb; border-radius: 1.1rem; background: white; box-shadow: 0 12px 36px #173a3310, 0 2px 6px #173a3308; }
+    .export-actions { display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; }
+    .export-copy { min-width: 0; }
+    .export-copy h2 { margin: 0; }
+    .export-copy p { margin: .35rem 0 0; color: var(--muted); font-size: .9rem; line-height: 1.55; }
+    .export-link { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; min-height: 2.9rem; padding: .72rem 1rem; border-radius: .65rem; background: var(--green); color: white; font-weight: 700; text-decoration: none; box-shadow: 0 3px 8px #145c4c22; transition: background .15s, transform .15s, box-shadow .15s; }
+    .export-link:hover { background: #104b3e; box-shadow: 0 5px 14px #145c4c30; transform: translateY(-1px); }
+    .export-link:focus-visible { outline: 3px solid #bd8b35; outline-offset: 2px; }
     .card-heading { display: flex; align-items: flex-start; gap: .85rem; margin-bottom: 1rem; }
     .step { flex: 0 0 2rem; height: 2rem; display: grid; place-items: center; border-radius: .65rem; background: #eaf3ef; color: var(--green); font-size: .85rem; font-weight: 800; }
     h2 { margin: 0; font-size: 1.1rem; letter-spacing: -.015em; }
@@ -79,6 +86,8 @@
       .details dd { padding-top: .15rem; }
       .manual { flex-direction: column; }
       .manual button, .actions button { flex: 1 1 auto; }
+      .export-actions { align-items: stretch; flex-direction: column; }
+      .export-link { width: 100%; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
   </style>
@@ -105,6 +114,13 @@
       <h1>Conference check-in</h1>
       <p>Verify each attendee’s registration and record their arrival for today.</p>
     </div>
+    <section class="card export-actions" aria-labelledby="export-heading">
+      <div class="export-copy">
+        <h2 id="export-heading">Registration report</h2>
+        <p>Download attendee registrations as a formatted Excel workbook. Fields not collected by the current registration form are left blank.</p>
+      </div>
+      <a class="export-link" href="{{ url_for('export_registrations') }}">Download Excel report</a>
+    </section>
     <section class="card">
       <div class="card-heading">
         <span class="step" aria-hidden="true">01</span>

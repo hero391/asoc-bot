@@ -61,7 +61,10 @@ TEXTS = {
         "menu_back": "⬅️ Back to menu",
         "menu_directions": "🗺️ Open directions in Google Maps",
         "venue_info": "📍 Venue: {venue}\n📅 Dates: {dates}\n\nTap below to open this venue in Google Maps.",
-        "contact_unavailable": "Organizer contact details are not available yet. Please check back later.",
+        "contact_info": (
+            "📧 Email: ethiopiastrokefoundation@gmail.com\n"
+            "📞 Phone: +251963333388 or +251955235523"
+        ),
         # ----- Part 2: schedule -----
         "schedule_pick": "📅 <b>Conference schedule</b>\nChoose a day:",
         "page_of": "Page {page}/{pages}",
@@ -140,7 +143,10 @@ TEXTS = {
         "menu_back": "⬅️ ወደ ምናሌው ተመለስ",
         "menu_directions": "🗺️ በGoogle Maps አቅጣጫውን ይክፈቱ",
         "venue_info": "📍 ቦታ፦ {venue}\n📅 ቀናት፦ {dates}\n\nቦታውን በGoogle Maps ለማየት ከታች ይጫኑ።",
-        "contact_unavailable": "የአዘጋጆች የመገኛ መረጃ ገና የለም። እባክዎ ቆይተው ይመለሱ።",
+        "contact_info": (
+            "📧 ኢሜይል: ethiopiastrokefoundation@gmail.com\n"
+            "📞 ስልክ: +251963333388 ወይም +251955235523"
+        ),
         # ----- Part 2: schedule -----
         "schedule_pick": "📅 <b>የጉባኤው መርሐ ግብር</b>\nቀን ይምረጡ፦",
         "page_of": "ገጽ {page}/{pages}",
