@@ -10,11 +10,26 @@ load_dotenv(PROJECT_ROOT / "venv" / "Scripts" / ".env")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 QR_SECRET = os.getenv("QR_SECRET", "")
 CHECKIN_PASSWORD = os.getenv("CHECKIN_PASSWORD", "")
+EMAIL_SMTP_HOST = os.getenv("EMAIL_SMTP_HOST", "smtp.gmail.com")
+EMAIL_SMTP_PORT = int(os.getenv("EMAIL_SMTP_PORT", "587"))
+EMAIL_SMTP_USERNAME = os.getenv("EMAIL_SMTP_USERNAME", "")
+EMAIL_SMTP_PASSWORD = os.getenv("EMAIL_SMTP_PASSWORD", "")
+EMAIL_FROM_ADDRESS = os.getenv("EMAIL_FROM_ADDRESS", EMAIL_SMTP_USERNAME)
+EMAIL_FROM_NAME = os.getenv("EMAIL_FROM_NAME", "ESF 2026 Symposium")
 CHECKIN_COOKIE_SECURE = os.getenv("CHECKIN_COOKIE_SECURE", "").lower() in {
     "1",
     "true",
     "yes",
 }
+EMAIL_CONFIRMATIONS_ENABLED = all(
+    (
+        EMAIL_SMTP_HOST,
+        EMAIL_SMTP_PORT,
+        EMAIL_SMTP_USERNAME,
+        EMAIL_SMTP_PASSWORD,
+        EMAIL_FROM_ADDRESS,
+    )
+)
 
 
 def project_path(value: str) -> str:

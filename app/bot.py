@@ -6,6 +6,7 @@ import asyncio
 import logging
 import os
 import re
+import smtplib
 from urllib.parse import quote_plus
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -22,6 +23,7 @@ from telegram.ext import (
 
 import config
 import db
+import email_utils
 import schedule_handlers
 from helpers import get_lang
 from qr_utils import make_qr_png
@@ -800,6 +802,24 @@ async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "trainee_status": d["trainee_status"],
         },
     )
+    try:
+        email_sent = await asyncio.to_thread(
+            email_utils.send_registration_confirmation, reg
+        )
+    except (smtplib.SMTPException, OSError):
+        log.exception(
+            "Registration confirmation email failed for %s", reg["reg_code"]
+        )
+    else:
+        if email_sent:
+            log.info("Registration confirmation email sent for %s", reg["reg_code"])
+        else:
+            log.warning(
+                "Registration confirmation email not sent for %s: "
+                "configure EMAIL_SMTP_USERNAME, EMAIL_SMTP_PASSWORD, "
+                "and EMAIL_FROM_ADDRESS",
+                reg["reg_code"],
+            )
     await query.edit_message_reply_markup(reply_markup=None)
     await send_qr(
         context.bot,
@@ -851,6 +871,11 @@ async def set_bot_name(application):
 def build_app():
     config.check_config()
     db.init_db()
+    if not config.EMAIL_CONFIRMATIONS_ENABLED:
+        log.warning(
+            "Registration confirmation emails are disabled; configure "
+            "EMAIL_SMTP_USERNAME, EMAIL_SMTP_PASSWORD, and EMAIL_FROM_ADDRESS"
+        )
 
     # Refresh the program when the CSV changes, including on a new deployment.
     try:
