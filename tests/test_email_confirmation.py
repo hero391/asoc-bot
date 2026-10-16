@@ -1,3 +1,5 @@
+import base64
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -26,76 +28,113 @@ class RegistrationConfirmationEmailTests(unittest.TestCase):
 
     def test_confirmation_contains_event_details_and_qr_attachment(self):
         with (
-            patch.object(config, "EMAIL_FROM_ADDRESS", "bot@example.org"),
             patch.object(
                 config,
                 "EMAIL_FROM_NAME",
                 "ESF 2026 Comprehensive Stroke Care Symposium",
+            ),
+            patch.object(
+                email_utils,
+                "make_qr_png",
+                return_value=MagicMock(getvalue=lambda: b"\x89PNG test"),
             ),
         ):
             message = email_utils.registration_confirmation(self.registration)
 
         self.assertEqual(
-            message["Subject"], "Registration confirmed | ESF 2026 | ASOC-0042"
+            message["subject"], "Registration confirmed | ESF 2026 | ASOC-0042"
         )
-        self.assertEqual(message["To"], "attendee@example.org")
+        self.assertEqual(message["to"], "attendee@example.org")
         self.assertEqual(
-            message["From"],
-            "ESF 2026 Comprehensive Stroke Care Symposium <bot@example.org>",
+            message["from_name"],
+            "ESF 2026 Comprehensive Stroke Care Symposium",
         )
-        body = message.get_body(preferencelist=("plain",)).get_content()
-        self.assertIn("November 2 & 3, 2026", body)
-        self.assertIn("Day 1 — Monday, November 2, 2026", body)
-        self.assertIn("Day 2 — Tuesday, November 3, 2026", body)
-        self.assertIn("Adwa Memorial Museum Multi Purpose Hall", body)
-        self.assertIn("registration QR code is attached", body)
-        qr_attachment = next(
-            attachment
-            for attachment in message.iter_attachments()
-            if attachment.get_filename() == "ESF-2026-registration-QR.png"
-        )
-        self.assertEqual(qr_attachment.get_content_type(), "image/png")
-        self.assertTrue(qr_attachment.get_payload(decode=True).startswith(b"\x89PNG"))
+        self.assertEqual(message["reply_to"], "ethiopiastrokefoundation@gmail.com")
+        self.assertIn("November 2 & 3, 2026", message["text"])
+        self.assertIn("Day 1 — Monday, November 2, 2026", message["text"])
+        self.assertIn("Day 2 — Tuesday, November 3, 2026", message["text"])
+        self.assertIn("Adwa Memorial Museum Multi Purpose Hall", message["text"])
+        self.assertIn("registration QR code is attached", message["text"])
+        self.assertIn("Registration confirmed", message["html"])
+        attachment = message["attachments"][0]
+        self.assertEqual(attachment["filename"], "ESF-2026-registration-QR.png")
+        self.assertEqual(attachment["content_type"], "image/png")
+        self.assertTrue(base64.b64decode(attachment["content"]).startswith(b"\x89PNG"))
 
-    def test_confirmation_uses_tls_and_authenticated_smtp(self):
-        server = MagicMock()
-        server_context = MagicMock()
-        server_context.__enter__.return_value = server
+    def test_sending_uses_secret_protected_https_relay(self):
+        response = MagicMock()
+        response.status = 200
+        response.read.return_value = b'{"ok":true}'
+        response_context = MagicMock()
+        response_context.__enter__.return_value = response
 
         with (
             patch.object(config, "EMAIL_CONFIRMATIONS_ENABLED", True),
-            patch.object(config, "EMAIL_SMTP_HOST", "smtp.example.org"),
-            patch.object(config, "EMAIL_SMTP_PORT", 587),
-            patch.object(config, "EMAIL_SMTP_USERNAME", "bot@example.org"),
-            patch.object(config, "EMAIL_SMTP_PASSWORD", "app-password"),
-            patch.object(config, "EMAIL_FROM_ADDRESS", "bot@example.org"),
+            patch.object(config, "GMAIL_RELAY_URL", "https://script.google.com/macros/s/id/exec"),
+            patch.object(config, "GMAIL_RELAY_SECRET", "test-relay-secret"),
             patch.object(
                 config,
                 "EMAIL_FROM_NAME",
                 "ESF 2026 Comprehensive Stroke Care Symposium",
             ),
-            patch.object(email_utils.smtplib, "SMTP", return_value=server_context) as smtp,
-            patch.object(email_utils, "make_qr_png", return_value=MagicMock(getvalue=lambda: b"png")),
+            patch.object(
+                email_utils,
+                "make_qr_png",
+                return_value=MagicMock(getvalue=lambda: b"\x89PNG test"),
+            ),
+            patch.object(email_utils, "urlopen", return_value=response_context) as post,
         ):
             result = email_utils.send_registration_confirmation(self.registration)
 
         self.assertTrue(result)
-        smtp.assert_called_once_with("smtp.example.org", 587, timeout=15)
-        server.starttls.assert_called_once_with()
-        server.login.assert_called_once_with("bot@example.org", "app-password")
-        sent_message = server.send_message.call_args.args[0]
-        self.assertEqual(sent_message["To"], "attendee@example.org")
+        request = post.call_args.args[0]
+        self.assertEqual(
+            request.full_url, "https://script.google.com/macros/s/id/exec"
+        )
+        self.assertEqual(request.get_method(), "POST")
+        self.assertEqual(request.get_header("Content-type"), "application/json")
+        self.assertEqual(post.call_args.kwargs, {"timeout": 15})
+        payload = json.loads(request.data)
+        self.assertEqual(payload["secret"], "test-relay-secret")
+        self.assertEqual(payload["to"], "attendee@example.org")
+        self.assertEqual(
+            payload["reply_to"], "ethiopiastrokefoundation@gmail.com"
+        )
+        self.assertTrue(
+            base64.b64decode(payload["attachments"][0]["content"]).startswith(
+                b"\x89PNG"
+            )
+        )
 
-    def test_sending_is_skipped_without_smtp_configuration(self):
+    def test_sending_is_skipped_without_relay_configuration(self):
         with (
             patch.object(config, "EMAIL_CONFIRMATIONS_ENABLED", False),
-            patch.object(email_utils.smtplib, "SMTP") as smtp,
+            patch.object(email_utils, "urlopen") as post,
         ):
             self.assertFalse(
                 email_utils.send_registration_confirmation(self.registration)
             )
 
-        smtp.assert_not_called()
+        post.assert_not_called()
+
+    def test_relay_rejection_is_reported(self):
+        response = MagicMock()
+        response.status = 200
+        response.read.return_value = b'{"ok":false,"error":"Unauthorized"}'
+        response_context = MagicMock()
+        response_context.__enter__.return_value = response
+
+        with (
+            patch.object(config, "EMAIL_CONFIRMATIONS_ENABLED", True),
+            patch.object(config, "GMAIL_RELAY_URL", "https://relay.example/exec"),
+            patch.object(config, "GMAIL_RELAY_SECRET", "wrong-secret"),
+            patch.object(
+                email_utils, "make_qr_png", return_value=MagicMock(getvalue=lambda: b"png")
+            ),
+            patch.object(email_utils, "urlopen", return_value=response_context),
+        ):
+            with self.assertRaisesRegex(OSError, "Gmail relay rejected.*Unauthorized"):
+                email_utils.send_registration_confirmation(self.registration)
 
 
 class RegistrationEmailHandlerTests(unittest.IsolatedAsyncioTestCase):
@@ -136,7 +175,7 @@ class RegistrationEmailHandlerTests(unittest.IsolatedAsyncioTestCase):
             patch.object(
                 bot.asyncio,
                 "to_thread",
-                new=AsyncMock(side_effect=OSError("SMTP unavailable")),
+                new=AsyncMock(side_effect=OSError("Gmail relay unavailable")),
             ) as send_email,
             patch.object(bot, "send_qr", new=AsyncMock()) as send_qr,
         ):

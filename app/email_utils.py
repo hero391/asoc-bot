@@ -1,19 +1,41 @@
-"""Send registration confirmation emails through an authenticated SMTP server."""
+"""Send registration confirmation emails through a private Gmail relay."""
+import base64
 import html
-import logging
-import smtplib
+import json
 from datetime import datetime
-from email.message import EmailMessage
+from urllib.error import HTTPError
+from urllib.parse import urlsplit
+from urllib.request import Request, urlopen
 
 import config
-from texts import PROGRAM_DAY_INFO, label_for, MODES, ROLES
 from qr_utils import make_qr_png
+from texts import MODES, PROGRAM_DAY_INFO, ROLES, label_for
 
-log = logging.getLogger(__name__)
+def _read_relay_response(request: Request) -> dict:
+    try:
+        with urlopen(request, timeout=15) as response:
+            if response.status != 200:
+                raise OSError(f"Gmail relay returned HTTP status {response.status}")
+            try:
+                result = json.loads(response.read())
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+                raise OSError("Gmail relay returned invalid JSON") from exc
+    except HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace").strip()
+        message = f"Gmail relay failed with HTTP {exc.code}"
+        if detail:
+            message += f": {detail}"
+        raise OSError(message) from exc
+    if not isinstance(result, dict):
+        raise OSError("Gmail relay response was not a JSON object")
+    if result.get("ok") is not True:
+        detail = result.get("error") or "unspecified error"
+        raise OSError(f"Gmail relay rejected the email: {detail}")
+    return result
 
 
-def registration_confirmation(registration) -> EmailMessage:
-    """Create a bilingual confirmation email with the attendee's QR code."""
+def registration_confirmation(registration) -> dict:
+    """Create a bilingual confirmation payload with the attendee's QR code."""
     name = registration["full_name"]
     safe_name = html.escape(name)
     reg_code = registration["reg_code"]
@@ -98,33 +120,45 @@ def registration_confirmation(registration) -> EmailMessage:
 </body>
 </html>
 """
-    message = EmailMessage()
-    message["Subject"] = subject
-    message["From"] = f"{config.EMAIL_FROM_NAME} <{config.EMAIL_FROM_ADDRESS}>"
-    message["To"] = registration["email"]
-    message.set_content(text)
-    message.add_alternative(body_html, subtype="html")
-
     qr_png = make_qr_png(registration["qr_token"])
-    message.add_attachment(
-        qr_png.getvalue(),
-        maintype="image",
-        subtype="png",
-        filename="ESF-2026-registration-QR.png",
-    )
-    return message
+    return {
+        "to": registration["email"],
+        "subject": subject,
+        "text": text,
+        "html": body_html,
+        "from_name": config.EMAIL_FROM_NAME,
+        "reply_to": "ethiopiastrokefoundation@gmail.com",
+        "attachments": [
+            {
+                "filename": "ESF-2026-registration-QR.png",
+                "content_type": "image/png",
+                "content": base64.b64encode(qr_png.getvalue()).decode("ascii"),
+            }
+        ],
+    }
 
 
 def send_registration_confirmation(registration) -> bool:
-    """Send a confirmation; return False when SMTP settings are not configured."""
+    """Send a confirmation through the Apps Script relay; return False until configured."""
     if not config.EMAIL_CONFIRMATIONS_ENABLED:
         return False
 
-    message = registration_confirmation(registration)
-    with smtplib.SMTP(
-        config.EMAIL_SMTP_HOST, config.EMAIL_SMTP_PORT, timeout=15
-    ) as server:
-        server.starttls()
-        server.login(config.EMAIL_SMTP_USERNAME, config.EMAIL_SMTP_PASSWORD)
-        server.send_message(message)
+    relay_url = urlsplit(config.GMAIL_RELAY_URL)
+    if relay_url.scheme != "https" or not relay_url.netloc:
+        raise OSError("GMAIL_RELAY_URL must be a valid HTTPS URL")
+    try:
+        request = Request(
+            config.GMAIL_RELAY_URL,
+            data=json.dumps(
+                {
+                    "secret": config.GMAIL_RELAY_SECRET,
+                    **registration_confirmation(registration),
+                }
+            ).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+    except ValueError as exc:
+        raise OSError("GMAIL_RELAY_URL is invalid") from exc
+    _read_relay_response(request)
     return True

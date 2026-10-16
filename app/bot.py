@@ -6,7 +6,6 @@ import asyncio
 import logging
 import os
 import re
-import smtplib
 from urllib.parse import quote_plus
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -806,7 +805,7 @@ async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
         email_sent = await asyncio.to_thread(
             email_utils.send_registration_confirmation, reg
         )
-    except (smtplib.SMTPException, OSError):
+    except OSError:
         log.exception(
             "Registration confirmation email failed for %s", reg["reg_code"]
         )
@@ -816,8 +815,7 @@ async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             log.warning(
                 "Registration confirmation email not sent for %s: "
-                "configure EMAIL_SMTP_USERNAME, EMAIL_SMTP_PASSWORD, "
-                "and EMAIL_FROM_ADDRESS",
+                "configure GMAIL_RELAY_URL and GMAIL_RELAY_SECRET",
                 reg["reg_code"],
             )
     await query.edit_message_reply_markup(reply_markup=None)
@@ -874,7 +872,7 @@ def build_app():
     if not config.EMAIL_CONFIRMATIONS_ENABLED:
         log.warning(
             "Registration confirmation emails are disabled; configure "
-            "EMAIL_SMTP_USERNAME, EMAIL_SMTP_PASSWORD, and EMAIL_FROM_ADDRESS"
+            "GMAIL_RELAY_URL and GMAIL_RELAY_SECRET"
         )
 
     # Refresh the program when the CSV changes, including on a new deployment.
